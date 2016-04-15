@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class table="community_room" name="com.hzih.community.domain.CommunityRoom">
+        <id access="field" name="id" type="long" length="11">
+            <generator class="increment"/>
+        </id>
+        <property name="room" length="5" access="field" type="int"/>
+        <property name="qrCode" length="50" access="field" type="string"/>
+
+        <many-to-one name="communityDoorplate" class="com.hzih.community.domain.CommunityDoorplate" lazy="false">
+            <!--对应该对象对应数据表的字段-->
+            <column name="community_doorplate_id" not-null="false" unique="true"/>
+        </many-to-one>
+
+        <set
+                name="tenants"
+                lazy="false"
+                inverse="true"
+                cascade="all">
+            <key>
+                <column name="community_room_id" not-null="false" unique="true" />
+            </key>
+            <one-to-many class="com.hzih.community.domain.Tenant"/>
+        </set>
+
+
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class table="user" name="com.hzih.community.domain.User">
+        <id access="field" name="id" type="long" column="id" length="11">
+            <generator class="increment"/>
+        </id>
+        <property name="name" length="20" column="name" access="field" type="string"/>
+        <property name="number" length="20" column="number" access="field" type="string" />
+        <property name="register_time" column="register_time" access="field" type="java.util.Date"/>
+        <property name="modify_time" column="modify_time" access="field" type="java.util.Date"/>
+        <property name="password" length="50" column="password" access="field" type="string"/>
+
+        <property name="idCard" length="15" column="idcard" access="field" type="string"/>
+        <property name="status" length="4" column="status" access="field" type="int"/>
+
+        <property name="phone" length="15" column="phone" not-null="false" unique="true" access="field" type="string"/>
+
+        <many-to-one name="community" class="com.hzih.community.domain.Community" lazy="false">
+            <!--对应该对象对应数据表的字段-->
+            <column name="community_id" not-null="false" unique="true"/>
+        </many-to-one>
+
+    </class>
+</hibernate-mapping>

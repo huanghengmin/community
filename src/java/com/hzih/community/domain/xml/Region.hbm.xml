@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class table="region" name="com.hzih.community.domain.Region">
+        <id access="field" name="id" type="long" column="REGION_ID" length="11">
+            <generator class="increment"/>
+        </id>
+        <property name="enName" column="REGION_NAME_EN" length="50" access="field" type="string"/>
+        <property name="name" column="REGION_NAME" length="50" access="field" type="string"/>
+        <property name="code" column="REGION_CODE" length="50" access="field" type="string"/>
+
+        <set name="childRegions" cascade="all" inverse="true" lazy="true">
+            <key column="REGION_ID"></key>
+            <one-to-many class="com.hzih.community.domain.Region"/>
+        </set>
+
+        <many-to-one name="parentRegion" lazy="false" column="PARENT_ID" class="com.hzih.community.domain.Region">
+        </many-to-one>
+
+    </class>
+</hibernate-mapping>

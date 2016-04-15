@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+          "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+          "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+<session-factory>
+	<property name="c3p0.min_size">5</property>
+	<property name="c3p0.max_size">100</property>
+    <property name="c3p0.timeout">1800</property>
+    <property name="c3p0.max_statements">100</property>
+    <!--<property name="c3p0.poolPreparedStatements">true</property>-->
+
+	<mapping resource="com/hzih/community/domain/xml/Account.hbm.xml" />
+	<mapping resource="com/hzih/community/domain/xml/Role.hbm.xml" />
+	<mapping resource="com/hzih/community/domain/xml/Permission.hbm.xml" />
+	<mapping resource="com/hzih/community/domain/xml/SafePolicy.hbm.xml" />
+	<mapping resource="com/hzih/community/domain/xml/AccountOperLog.hbm.xml" />
+	<mapping resource="com/hzih/community/domain/xml/User.hbm.xml" />
+	<mapping resource="com/hzih/community/domain/xml/UserOperLog.hbm.xml" />
+	<mapping resource="com/hzih/community/domain/xml/Community.hbm.xml" />
+	<mapping resource="com/hzih/community/domain/xml/CommunityBuild.hbm.xml" />
+	<mapping resource="com/hzih/community/domain/xml/CommunityBuildUnit.hbm.xml" />
+	<mapping resource="com/hzih/community/domain/xml/CommunityDoorplate.hbm.xml" />
+    <mapping resource="com/hzih/community/domain/xml/CommunityRoom.hbm.xml" />
+    <mapping resource="com/hzih/community/domain/xml/LardLord.hbm.xml" />
+    <mapping resource="com/hzih/community/domain/xml/Tenant.hbm.xml" />
+    <mapping resource="com/hzih/community/domain/xml/TenantLog.hbm.xml" />
+    <mapping resource="com/hzih/community/domain/xml/Region.hbm.xml" />
+</session-factory>
+</hibernate-configuration>

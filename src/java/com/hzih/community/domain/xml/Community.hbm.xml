@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class table="community" name="com.hzih.community.domain.Community">
+        <id access="field" name="id" type="long" length="11">
+            <generator class="increment"/>
+        </id>
+        <property name="name" length="50" access="field" type="string"/>
+        <property name="address" length="50" access="field" type="string"/>
+        <!--<property name="ssxq" length="50" access="field" type="string"/>-->
+        <!--<property name="ssxqname" length="250" access="field" type="string"/>-->
+        <property name="number" length="50" access="field" type="string"/>
+        <property name="principal" length="50" access="field" type="string"/>
+        <property name="principal_phone" length="50" access="field" type="string"/>
+        <property name="logo" access="field" type="blob"/>
+
+        <many-to-one name="region" class="com.hzih.community.domain.Region" lazy="false">
+            <!--对应该对象对应数据表的字段-->
+            <column name="region_id" not-null="false" unique="true"/>
+        </many-to-one>
+
+        <set
+                name="communityBuilds"
+                lazy="false"
+                inverse="true"
+                cascade="all">
+            <key>
+                <column name="community_id" not-null="false" unique="true"/>
+            </key>
+            <one-to-many class="com.hzih.community.domain.CommunityBuild"/>
+        </set>
+
+    </class>
+</hibernate-mapping>

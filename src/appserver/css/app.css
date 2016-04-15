@@ -1,0 +1,4 @@
+.tou{display: -webkit-box;-webkit-box-align: center;-webkit-box-pack: center;margin-top: 10px;}
+.h{display: -webkit-box;height: 90px;width: 320px;background-size: 320px auto;background-repeat: no-repeat;background-image: url("../img/android_h.png");}
+.o{display: -webkit-box;height: 80px;width: 320px;background-size: 320px auto;background-repeat: no-repeat;background-image: url("../img/android.png");}
+.d{display: -webkit-box;height: 200px;width: 320px;background-size: 320px auto;background-repeat: no-repeat;background-image: url("../img/android_d.png");}

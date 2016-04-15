@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                           http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+                           http://www.springframework.org/schema/aop 
+                           http://www.springframework.org/schema/aop/spring-aop-2.0.xsd 
+                           http://www.springframework.org/schema/tx 
+                           http://www.springframework.org/schema/tx/spring-tx-2.0.xsd ">
+
+    <!-- load properties from file -->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location">
+            <value>classpath:/config.properties</value>
+        </property>
+    </bean>
+
+    <!-- ///////////////// 数据库持久层配置 /////////////////// -->
+    <!--<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">-->
+    <!--<property name="jndiName" value="java:comp/env/${jndiName}"></property>-->
+    <!--</bean>-->
+    <bean id="dataSource"
+          class="com.mchange.v2.c3p0.ComboPooledDataSource"
+          destroy-method="close">
+        <property name="driverClass">
+            <value>${jdbc.driverClass}</value>
+        </property>
+        <property name="jdbcUrl">
+            <value>${jdbc.url}</value>
+        </property>
+        <property name="user">
+            <value>${jdbc.user}</value>
+        </property>
+        <property name="password">
+            <value>${jdbc.password}</value>
+        </property>
+        <!--连接池中保留的最小连接数。-->
+        <property name="minPoolSize" value="10"/>
+        <!--连接池中保留的最大连接数。Default: 15 -->
+        <property name="maxPoolSize" value="30"/>
+        <!--最大空闲时间,1800秒内未使用则连接被丢弃。若为0则永不丢弃。Default: 0 -->
+        <property name="maxIdleTime" value="1800"/>
+        <!--当连接池中的连接耗尽的时候c3p0一次同时获取的连接数。Default: 3 -->
+        <property name="acquireIncrement" value="3"/>
+        <property name="maxStatements" value="0"/>
+        <property name="initialPoolSize" value="3"/>
+        <!--每60秒检查所有连接池中的空闲连接。Default: 0 -->
+        <property name="idleConnectionTestPeriod" value="60"/>
+        <!--定义在从数据库获取新连接失败后重复尝试的次数。Default: 30 -->
+        <property name="acquireRetryAttempts" value="30"/>
+        <property name="breakAfterAcquireFailure" value="true"/>
+        <property name="testConnectionOnCheckout" value="false"/>
+    </bean>
+
+    <!--Hibernate SessionFatory-->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+        <property name="dataSource">
+            <ref bean="dataSource"/>
+        </property>
+        <property name="configLocations">
+            <list>
+                <value>classpath:hibernate.cfg.xml</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQLInnoDBDialect</prop>
+                <prop key="hibernate.show_sql">false</prop>
+                <prop key="hibernate.generate_statistics">true</prop>
+                <prop key="hibernate.connection.release_mode">auto</prop>
+                <prop key="hibernate.autoReconnect">true</prop>
+                <!--<prop key="hibernate.hbm2ddl.auto">update</prop>-->
+                <prop key="cache.use_query_cache">true</prop>
+                <!--   <prop key="hibernate.cache.provider_class">
+                       org.hibernate.cache.EhCacheProvider
+                   </prop>-->
+            </props>
+        </property>
+    </bean>
+
+    <!--Hibernate TransactionManager--><!-- 事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <property name="sessionFactory">
+            <ref local="sessionFactory"/>
+        </property>
+    </bean>
+    <!--   配置事务拦截器-->
+    <bean id="transactionalTemplate" abstract="true"
+          class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="new*">PROPAGATION_REQUIRED</prop>
+                <prop key="add*">PROPAGATION_REQUIRED</prop>
+                <prop key="bind*">PROPAGATION_REQUIRED</prop>
+                <prop key="cancel*">PROPAGATION_REQUIRED</prop>
+                <prop key="change*">PROPAGATION_REQUIRED</prop>
+                <prop key="check*">PROPAGATION_REQUIRED</prop>
+                <prop key="del*">PROPAGATION_REQUIRED</prop>
+                <prop key="edit*">PROPAGATION_REQUIRED</prop>
+                <prop key="find*">PROPAGATION_REQUIRED,readOnly</prop>
+                <prop key="get*">PROPAGATION_REQUIRED,readOnly</prop>
+                <prop key="is*">PROPAGATION_REQUIRED,readOnly</prop>
+                <prop key="insert">PROPAGATION_REQUIRED</prop>
+                <prop key="list*">PROPAGATION_REQUIRED,readOnly</prop>
+                <prop key="merge*">PROPAGATION_REQUIRED,readOnly</prop>
+                <prop key="next*">PROPAGATION_REQUIRED</prop>
+                <prop key="upload*">PROPAGATION_REQUIRED</prop>
+                <prop key="upd*">PROPAGATION_REQUIRED</prop>
+                <prop key="unbind*">PROPAGATION_REQUIRED</prop>
+                <prop key="save*">PROPAGATION_REQUIRED</prop>
+                <prop key="build*">PROPAGATION_REQUIRED</prop>
+                <prop key="search*">PROPAGATION_REQUIRED,readOnly</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="autoBeanNameProxyCreator" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <property name="beanNames">
+            <list>
+                <value>*DAO</value>
+                <value>gotoPage</value>
+                <value>find</value>
+            </list>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="transactionalTemplate"/>
+            </list>
+        </property>
+
+        <!-- 这里的配置是必须的，否则无法完成代理的类型转化 这是使用CGLIB来生成代理 -->
+        <property name="proxyTargetClass" value="true"/>
+    </bean>
+
+    <!--hibernateTemplate-->
+    <bean id="daoTemplate" abstract="true" class="cn.collin.commons.dao.MyDaoSupport">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <!-- dao -->
+    <bean id="accountDao" class="com.hzih.community.dao.impl.AccountDaoImpl" parent="daoTemplate"/>
+    <bean id="roleDao" class="com.hzih.community.dao.impl.RoleDaoImpl" parent="daoTemplate"/>
+    <bean id="safePolicyDao" class="com.hzih.community.dao.impl.SafePolicyDaoImpl" parent="daoTemplate"/>
+    <bean id="accountOperLogDao" class="com.hzih.community.dao.impl.AccountOperLogDaoImpl" parent="daoTemplate"/>
+    <bean id="userOperLogDao" class="com.hzih.community.dao.impl.UserOperLogDaoImpl" parent="daoTemplate"/>
+    <bean id="permissionDao" class="com.hzih.community.dao.impl.PermissionDaoImpl" parent="daoTemplate"/>
+    <bean id="userDao" class="com.hzih.community.dao.impl.UserDaoImpl" parent="daoTemplate"/>
+    <bean id="communityDao" class="com.hzih.community.dao.impl.CommunityDaoImpl" parent="daoTemplate"/>
+    <bean id="communityBuildDao" class="com.hzih.community.dao.impl.CommunityBuildDaoImpl" parent="daoTemplate"/>
+    <bean id="communityBuildUnitDao" class="com.hzih.community.dao.impl.CommunityBuildUnitDaoImpl" parent="daoTemplate"/>
+    <bean id="communityDoorplateDao" class="com.hzih.community.dao.impl.CommunityDoorplateDaoImpl" parent="daoTemplate"/>
+    <bean id="lardLordDao" class="com.hzih.community.dao.impl.LardLordDaoImpl" parent="daoTemplate"/>
+    <bean id="tenantDao" class="com.hzih.community.dao.impl.TenantDaoImpl" parent="daoTemplate"/>
+    <bean id="tenantLogDao" class="com.hzih.community.dao.impl.TenantLogDaoImpl" parent="daoTemplate"/>
+    <bean id="communityRoomDao" class="com.hzih.community.dao.impl.CommunityRoomDaoImpl" parent="daoTemplate"/>
+    <!--<bean id="govCodeDao" class="com.hzih.community.dao.impl.GovCodeDaoImpl" parent="daoTemplate"/>-->
+    <bean id="regionDao" class="com.hzih.community.dao.impl.RegionDaoImpl" parent="daoTemplate"/>
+
+    <!-- services -->
+    <bean id="logService" class="com.hzih.community.service.impl.LogServiceImpl">
+        <property name="accountOperLogDao" ref="accountOperLogDao"/>
+    </bean>
+
+    <bean id="loginService" class="com.hzih.community.service.impl.LoginServiceImpl">
+        <property name="accountDao" ref="accountDao"/>
+    </bean>
+
+    <bean id="safePolicyService" class="com.hzih.community.service.impl.SafePolicyServiceImpl">
+        <property name="safePolicyDao" ref="safePolicyDao"/>
+    </bean>
+
+    <bean id="roleService" class="com.hzih.community.service.impl.RoleServiceImpl">
+        <property name="roleDao" ref="roleDao"/>
+        <property name="permissionDao" ref="permissionDao"/>
+    </bean>
+
+    <bean id="accountService" class="com.hzih.community.service.impl.AccountServiceImpl">
+        <property name="accountDao" ref="accountDao"/>
+        <property name="roleDao" ref="roleDao"/>
+    </bean>
+
+    <bean id="auditService" class="com.hzih.community.service.impl.AuditServiceImpl">
+        <property name="accountOperLogDao" ref="accountOperLogDao"/>
+    </bean>
+
+    <!--user-->
+    <bean id="AccountAction" class="com.hzih.community.web.action.account.AccountAction">
+        <property name="logService" ref="logService"/>
+        <property name="accountService" ref="accountService"/>
+        <property name="safePolicyService" ref="safePolicyService"/>
+        <property name="communityDao" ref="communityDao"/>
+    </bean>
+
+    <bean id="loginAction" class="com.hzih.community.web.action.account.LoginAction">
+        <property name="loginService" ref="loginService"/>
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="logoutAction" class="com.hzih.community.web.action.account.LogoutAction">
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="RoleAction" class="com.hzih.community.web.action.account.RoleAction">
+        <property name="roleService" ref="roleService"/>
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="SafePolicyAction" class="com.hzih.community.web.action.account.SafePolicyAction">
+        <property name="logService" ref="logService"/>
+        <property name="safePolicyService" ref="safePolicyService"/>
+    </bean>
+    <!--net-->
+    <bean id="ConfigManagerAction" class="com.hzih.community.web.action.system.ConfigManagerAction">
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="InterfaceManagerAction" class="com.hzih.community.web.action.net.InterfaceManagerAction">
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="SecurityConfigAction" class="com.hzih.community.web.action.net.SecurityConfigAction">
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="SaveInterfaceAction" class="com.hzih.community.web.action.net.SaveInterfaceAction">
+    </bean>
+
+    <!--system-->
+    <bean id="PlatformAction" class="com.hzih.community.web.action.system.PlatformAction">
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="LicenseAction" class="com.hzih.community.web.action.system.LicenseAction">
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="DownLoadAction" class="com.hzih.community.web.action.system.DownLoadAction">
+        <property name="logService" ref="logService"/>
+        <property name="loginService" ref="loginService"/>
+    </bean>
+
+    <bean id="UpgradeAction" class="com.hzih.community.web.action.system.UpgradeAction">
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="SysLogConfigAction" class="com.hzih.community.web.action.syslog.SysLogConfigAction">
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="checkTimeoutAction" class="com.hzih.community.web.action.CheckTimeoutAction">
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="AuditAction" class="com.hzih.community.web.action.audit.AuditAction">
+        <property name="logService" ref="logService"/>
+        <property name="auditService" ref="auditService"/>
+    </bean>
+
+    <bean id="UserAction" class="com.hzih.community.web.action.user.UserAction">
+        <property name="userDao" ref="userDao"/>
+        <property name="userOperLogDao" ref="userOperLogDao"/>
+        <property name="logService" ref="logService"/>
+        <property name="communityDao" ref="communityDao"/>
+    </bean>
+
+    <bean id="CommunityAction" class="com.hzih.community.web.action.community.CommunityAction">
+        <property name="communityDao" ref="communityDao"/>
+        <property name="regionDao" ref="regionDao"/>
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="CommunityBuildAction" class="com.hzih.community.web.action.community.CommunityBuildAction">
+        <property name="communityBuildDao" ref="communityBuildDao"/>
+        <property name="communityDao" ref="communityDao"/>
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="CommunityBuildUnitAction" class="com.hzih.community.web.action.community.CommunityBuildUnitAction">
+        <property name="communityBuildUnitDao" ref="communityBuildUnitDao"/>
+        <property name="communityBuildDao" ref="communityBuildDao"/>
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="CommunityDoorplateAction" class="com.hzih.community.web.action.community.CommunityDoorplateAction">
+        <property name="communityDoorplateDao" ref="communityDoorplateDao"/>
+        <property name="logService" ref="logService"/>
+        <property name="communityBuildUnitDao" ref="communityBuildUnitDao"/>
+    </bean>
+
+    <bean id="CommunityRoomAction" class="com.hzih.community.web.action.community.CommunityRoomAction">
+        <property name="logService" ref="logService"/>
+        <property name="communityDoorplateDao" ref="communityDoorplateDao"/>
+        <property name="communityRoomDao" ref="communityRoomDao"/>
+    </bean>
+
+    <bean id="LardLordAction" class="com.hzih.community.web.action.lardlord.LardLordAction">
+        <property name="lardLordDao" ref="lardLordDao"/>
+        <property name="logService" ref="logService"/>
+        <property name="communityDoorplateDao" ref="communityDoorplateDao"/>
+    </bean>
+
+    <bean id="TenantAction" class="com.hzih.community.web.action.tenant.TenantAction">
+        <property name="tenantDao" ref="tenantDao"/>
+        <property name="tenantLogDao" ref="tenantLogDao"/>
+        <property name="logService" ref="logService"/>
+        <property name="communityDoorplateDao" ref="communityDoorplateDao"/>
+        <property name="communityRoomDao" ref="communityRoomDao"/>
+    </bean>
+
+
+    <bean id="TenantLogAction" class="com.hzih.community.web.action.tenant.TenantLogAction">
+        <property name="tenantLogDao" ref="tenantLogDao"/>
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="UpgradeVersionAction" class="com.hzih.community.web.action.client.UpgradeVersionAction">
+    </bean>
+
+    <bean id="ClientVersionAction" class="com.hzih.community.web.action.client.ClientVersionAction">
+    </bean>
+
+    <bean id="RegionAction" class="com.hzih.community.web.action.region.RegionAction">
+        <property name="logService" ref="logService"/>
+        <property name="regionDao" ref="regionDao"/>
+    </bean>
+
+    <bean id="CenterAction" class="com.hzih.community.web.action.center.CenterAction">
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="LardLordOCRAction" class="com.hzih.community.web.action.ocr.LardLordOCRAction">
+        <property name="lardLordDao" ref="lardLordDao"/>
+        <property name="logService" ref="logService"/>
+    </bean>
+
+    <bean id="TenantOCRAction" class="com.hzih.community.web.action.ocr.TenantOCRAction">
+        <property name="tenantDao" ref="tenantDao"/>
+        <property name="logService" ref="logService"/>
+    </bean>
+
+</beans>

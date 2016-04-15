@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class table="tenant" name="com.hzih.community.domain.Tenant">
+        <id access="field" name="id" type="long" column="id" length="11">
+            <generator class="increment"/>
+        </id>
+        <property name="name" length="50" access="field" type="string"/>
+        <property name="sex"   access="field" type="string"/>
+        <property name="idCard" length="50"  access="field" type="string"/>
+        <property name="mz" length="50"  access="field" type="string"/>
+        <property name="birth" length="50"  access="field" type="string"/>
+        <property name="sign" length="50"  access="field" type="string"/>
+        <property name="address" length="50"  access="field" type="string"/>
+        <property name="DN" length="50"  access="field" type="string"/>
+        <property name="validity" length="50"  access="field" type="string"/>
+        <property name="phone" length="50"  access="field" type="string"/>
+        <property name="description" length="50"  access="field" type="string"/>
+        <property name="bytes" length="50"  access="field" type="blob"/>
+        <property name="cardPicBefore" column="card_pic_before" length="50"  access="field" type="blob"/>
+        <property name="cardPicAfter" column="card_pic_after" length="50"  access="field" type="blob"/>
+        <property name="status" length="4"  access="field" type="int"/>
+        <property name="attention" length="4"  access="field" type="int"/>
+        <property name="ocr" length="4"  access="field" type="int"/>
+        <property name="initDate" column="init_date"   access="field" type="date"/>
+        <property name="lastDate" column="last_date"   access="field" type="date"/>
+
+        <many-to-one name="communityRoom" class="com.hzih.community.domain.CommunityRoom" lazy="false">
+            <!--对应该对象对应数据表的字段-->
+            <column name="community_room_id" not-null="false" unique="true"/>
+        </many-to-one>
+
+    </class>
+</hibernate-mapping>
